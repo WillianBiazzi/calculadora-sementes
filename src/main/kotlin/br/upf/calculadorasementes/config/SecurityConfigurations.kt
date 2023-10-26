@@ -18,23 +18,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfigurations(val securityFilter: SecurityFilter) {
 
     @Bean
-    fun securityFilterChain(
-        httpSecurity: HttpSecurity
-    ): SecurityFilterChain {
+    fun securityFilterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
         return httpSecurity
             .csrf { it.disable() }
             .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .authorizeHttpRequests {
-                it.requestMatchers(HttpMethod.POST, "/eventos").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.GET, "/eventos", "/eventos/*").permitAll()
+                it
+                    // Permite todas as operações relacionadas a cultivares e embalagens
                     .requestMatchers(HttpMethod.GET, "/embalagens", "/embalagens/*").permitAll()
                     .requestMatchers(HttpMethod.GET, "/cultivares", "/cultivares/*").permitAll()
-                    .requestMatchers("/eventos/*").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/embalagens").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/cultivares").permitAll()
+                    .requestMatchers(HttpMethod.PUT, "/embalagens/*").permitAll()
+                    .requestMatchers(HttpMethod.PUT, "/cultivares/*").permitAll()
+                    .requestMatchers(HttpMethod.DELETE, "/embalagens/*").permitAll()
+                    .requestMatchers(HttpMethod.DELETE, "/cultivares/*").permitAll()
                     .requestMatchers("/auth/*").permitAll()
                     .requestMatchers("/usuarios/*").hasRole("ADMIN")
-
                     .anyRequest().authenticated()
             }
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter::class.java)
@@ -42,9 +44,7 @@ class SecurityConfigurations(val securityFilter: SecurityFilter) {
     }
 
     @Bean
-    fun authenticationManager(
-        authenticationConfiguration: AuthenticationConfiguration
-    ): AuthenticationManager {
+    fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
         return authenticationConfiguration.authenticationManager
     }
 
